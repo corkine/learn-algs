@@ -257,3 +257,20 @@ object N11 extends App {
   println(a.dayOfTheWeek())
 }
 
+//object Test extends App {
+//  @inline def xBiggerY(a:Point2D) = a.getX > a.getY
+//  @inline def random(max:Int,min:Int) = Random.nextInt() * (max - min) + min
+//  @inline def readN[T](hint:String="")(op: => T):Array[T]= {
+//    val i = StdIn.readLine(hint).toInt
+//    (1 to i).map { _ => op }.toArray
+//  }
+//  val rand = random(0,100)
+//  readN() { new Point2D.Double(rand,rand) }.filter(xBiggerY).toSet
+//
+//  @inline def xBiggerThanY = { x: Point2D => x.getX > x.getY }
+//  @inline def randomPointsN = { n: Int =>
+//    (1 to n) map { _ => new Point2D.Double(rand,rand) }}
+//  randomPointsN(StdIn.readInt()).filter(xBiggerThanY).toSet
+//
+//}
+
