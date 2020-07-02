@@ -92,6 +92,7 @@ object FixedCapacityStackOfStringsDemo extends App with StackTest {
     def push(t: String): Unit = { if (N < cap) { N += 1; a(N) = t } }
     def pop(): String = { N -= 1; a(N+1) }
     def isEmpty:Boolean = N == 0
+    def isFull:Boolean = N == cap
     def size:Int = N
   }
   lazy val stack = new FixedCapacityStackOfStrings(100) with TStack[String]
@@ -151,5 +152,204 @@ object FlexibleCapacityStackDemo extends App with StackTest {
 
 //上述为《算法》1.3.1 API 及其各自功能， 1.3.2 基于数组的实现： Bag、Queue、Stack 的实现（可伸缩，可迭代）
 //1.3.3 基于链表的实现
+
+trait Node[T] {
+  var element: T
+  var next: Node[T]
+}
+object Node {
+  def apply[T](): Node[T] = new Node[T]() {
+    override var element: T = _
+    override var next: Node[T] = _
+  }
+}
+object NodeTest extends App {
+  var first = Node[String]()
+  val second = Node[String]()
+  val third = Node[String]()
+  first.element = "to"
+  second.element = "be"
+  third.element = "or"
+  first.next = second
+  second.next = third
+  //添加头节点
+  val oldFirst = first
+  first = Node[String]()
+  first.element = "not"
+  first.next = oldFirst
+  //删除头节点
+  first = oldFirst
+  //添加尾节点
+  var last = Node[String]()
+  last.element = "not"
+  third.next = last
+  //遍历
+  var now = first
+  while (now != null) {
+    println(now)
+    now = now.next
+  }
+}
+
+object StackByListDemo extends App with StackTest {
+  class ListStack[T] extends Stack[T] {
+    private var first: Node[T] = _
+    private var N: Int = _
+    override def isEmpty: Boolean = N == 0
+    override def size: Int = N
+    def peek:T = first.element
+    override def push(t: T): Unit = {
+      val oldFirst = first
+      first = Node[T]()
+      first.element = t
+      first.next = oldFirst
+      N += 1
+    }
+    override def pop(): T = {
+      val firstElement = first.element
+      first = first.next
+      N -= 1
+      firstElement
+    }
+    override def iterator: Iterator[T] = new Iterator[T] {
+      var now: Node[T] = first
+      override def hasNext: Boolean = now == null
+      override def next(): T = {
+        val element = now.element
+        now = now.next
+        element
+      }
+    }
+  }
+
+  lazy val stack = new ListStack[String] with TStack[String]
+}
+
+trait QueueTest {
+  trait TQueue[M] {
+    def enqueue(m:M):Unit
+    def dequeue():M
+    def isEmpty:Boolean
+    def size:Int
+  }
+  val queue: TQueue[String]
+  //to be or not to - be - - that - - - is
+  StdIn.readLine("Input words>>> ").split(" ").map(_.trim).foreach {
+    case "-" =>
+      if (!queue.isEmpty) println("Dequeue ", queue.dequeue())
+    case item =>
+      println("Enqueue ", item); queue.enqueue(item)
+  }
+  println("(" + queue.size + " left on queue)")
+}
+
+object QueueByListDemo extends App with QueueTest {
+  class ListQueue[T] extends Queue[T] {
+    private var first: Node[T] = _
+    private var N: Int = 0
+    override def enqueue(t: T): Unit = {
+      if (first == null) {
+        first = Node[T]()
+        first.element = t
+      } else {
+        var next: Node[T] = first
+        while (next.next != null) {
+          next = next.next
+        }
+        val last = Node[T]()
+        last.element = t
+        next.next = last
+      }
+      N += 1
+    }
+    override def dequeue(): T = {
+      val firstElement = first.element
+      first = first.next
+      N -= 1
+      firstElement
+    }
+    override def isEmpty: Boolean = N == 0
+    override def size: Int = N
+    override def iterator: Iterator[T] = new Iterator[T] {
+      private var point: Node[T] = first
+      override def hasNext: Boolean = point == null
+      override def next(): T = {
+        val element = point.element
+        point = point.next
+        element
+      }
+    }
+  }
+
+  lazy val queue = new ListQueue[String] with TQueue[String]
+}
+
+trait BagTest {
+  trait TBag[M] {
+    def add(m:M):Unit
+    def isEmpty:Boolean
+    def size:Int
+  }
+  val bag: TBag[String]
+  //to be or not to - be - - that - - - is
+  StdIn.readLine("Input words>>> ").split(" ").map(_.trim).foreach {
+    case "-" =>
+      //if (!bag.isEmpty) println("Dequeue ", bag.add())
+    case item =>
+      println("Add ", item); bag.add(item)
+  }
+  println("(" + bag.size + " left on bag)")
+}
+
+object BagByListDemo extends App with BagTest {
+  class ListBag[T] extends Bag[T] {
+    private var first: Node[T] = _
+    private var N: Int = 0
+    override def add(t: T): Unit = {
+      if (first == null) {
+        first = Node[T]()
+        first.element = t
+      } else {
+        var next: Node[T] = first
+        while (next.next != null) {
+          next = next.next
+        }
+        val last = Node[T]()
+        last.element = t
+        next.next = last
+      }
+      N += 1
+    }
+    override def isEmpty: Boolean = N == 0
+    override def size: Int = N
+    override def iterator: Iterator[T] = new Iterator[T] {
+      private var point: Node[T] = first
+      override def hasNext: Boolean = point == null
+      override def next(): T = {
+        val element = point.element
+        point = point.next
+        element
+      }
+    }
+  }
+
+  lazy val bag = new ListBag[String] with TBag[String]
+}
+
+//通过 Array 和 List 实现了 Bag、Queue、Stack 这三种数据结构，在后期
+//基于这些基本的数据结构实现较为复杂的数据结构，并且通过算法在其中操纵这些
+//数据结构以实现 API。这些数据结构包括父链接树、二分查找树、字符串、二叉堆、散列表、邻接链表、
+//单词查找树、三项单词查找树等。程序是由算法 + 数据结构捏合而成的，前者代表了动作，后者
+//代表了内部表现，其组合在一起共同实现了 Java 类的接口，以高效的满足应用的需求。
+
+
+
+
+
+
+
+
+
+
 
 
