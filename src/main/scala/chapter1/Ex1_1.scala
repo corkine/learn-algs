@@ -230,7 +230,7 @@ object N24 extends App {
   def gcd(p:Int, q:Int):Int = {
     @scala.annotation.tailrec
     def loop(p:Int, q:Int, level:Int):Int = {
-//      println(" " * level + " p:%d,q:%d".format(p,q))
+      println(" " * level + " p:%d,q:%d".format(p,q))
       if (q == 0) return p
       val r = p % q
       loop(q, r, level + 1)

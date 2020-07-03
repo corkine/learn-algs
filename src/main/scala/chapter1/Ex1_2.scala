@@ -3,12 +3,11 @@ package chapter1.Ex1_2
 import java.awt.geom.Point2D
 import java.time.{DayOfWeek, LocalDate}
 
-import chapter1.Ex1_2.N11.SmartDate.{Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday, Week}
-import edu.princeton.cs.algs4.{Date, StdDraw}
+import chapter1.Ex1_2.N11.SmartDate._
+import edu.princeton.cs.algs4.Date
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.beans.binding.StringBinding
-import scalafx.beans.property.{IntegerProperty, LongProperty}
+import scalafx.beans.property.LongProperty
 import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, Label, ProgressBar}
 import scalafx.scene.layout.{HBox, VBox}
@@ -20,7 +19,6 @@ import scalafx.scene.{Group, Scene}
 import scala.collection.mutable.ArrayBuffer
 import scala.io.StdIn
 import scala.util.Random
-import scala.util.matching.Regex
 
 object N1 extends App {
   def minDistance(points:Array[Point2D]): Double = {
