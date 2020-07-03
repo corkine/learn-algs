@@ -21,6 +21,7 @@ trait QuickFind extends Conn {
       val id = ids(i)
       if (id == aId) ids(i) = bId
     }
+    println("ids",ids.mkString(","))
   }
 }
 
@@ -32,7 +33,10 @@ trait QuickFind extends Conn {
  */
 trait QuickUnion extends Conn {
   override def connect(a: Int, b: Int): Boolean = root(a) == root(b)
-  override def union(a: Int, b: Int): Unit = ids(root(a)) = root(b)
+  override def union(a: Int, b: Int): Unit = {
+    ids(root(a)) = root(b)
+    println("ids",ids.mkString(","))
+  }
   protected def root(a:Int):Int = ids(a) match {
     case `a` => a
     case parent => root(parent)
@@ -61,6 +65,8 @@ trait WeightQuickUnion extends Conn {
     if (sa <= sb) ids(ar) = br else ids(br) = ar
     sizes(b) = sab
     sizes(a) = sab
+    print("ids",ids.mkString(","))
+    println("sizes",sizes.mkString(","))
   }
 }
 
@@ -79,15 +85,17 @@ trait PathZipped { self: WeightQuickUnion =>
 }
 
 object QuickFindTest extends App {
-  val demo = new WeightQuickUnion with PathZipped {
+  val demo = new WeightQuickUnion {
     val end = 10
   }
-  demo.union(2,3)
+  demo.union(9,0)
   demo.union(3,4)
-  demo.union(5,9)
-  demo.union(1,7)
-  demo.union(9,8)
-  demo.union(1,3)
+  demo.union(5,8)
+  demo.union(7,2)
+  demo.union(2,1)
+  demo.union(5,7)
+  demo.union(0,3)
+  demo.union(4,2)
   (0 to demo.end).flatMap(a => (0 to demo.end).map(b => (a,b))).foreach { case (a,b) =>
     println(s"$a ${if (demo.connect(a,b)) "Connect" else "DisConnect"} $b")
   }

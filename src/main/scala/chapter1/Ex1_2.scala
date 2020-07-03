@@ -3,7 +3,6 @@ package chapter1.Ex1_2
 import java.awt.geom.Point2D
 import java.time.{DayOfWeek, LocalDate}
 
-import chapter1.Ex1_2.N11.SmartDate._
 import edu.princeton.cs.algs4.Date
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
@@ -223,7 +222,7 @@ object N10App extends JFXApp with N10 {
 }
 
 object N11 extends App {
-  class SmartDate(date:String) extends Date(date) {
+  /*class SmartDate(date:String) extends Date(date) {
     if (!date.contains("/")) throw new RuntimeException("解析错误")
     def dayOfTheWeek():Week = LocalDate.of(this.year(),this.month(),this.day()).getDayOfWeek match {
       case DayOfWeek.MONDAY => Monday
@@ -252,7 +251,7 @@ object N11 extends App {
   }
   val a = new SmartDate("10/11/2020")
   println(a.month())
-  println(a.dayOfTheWeek())
+  println(a.dayOfTheWeek())*/
 }
 
 //object Test extends App {
