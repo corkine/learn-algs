@@ -49,7 +49,7 @@ class Shell[T<: Comparable[T]] extends SortBasic[T] {
       (sum, now) => if (now == sum.last * 3 + 1) sum :+ now else sum }
     hs.reverse.foreach { h =>
       (h until N).foreach { i =>
-        (1 to i).reverse.foreach { j =>
+        (1 to i).reverse.foreach { j => //此处实现错误，应该是 step h
           if ((j - h >= 0) && less(a(j), a(j - h))) {
             exch(a, j, j - h)
           }
