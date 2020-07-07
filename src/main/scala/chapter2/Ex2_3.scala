@@ -116,6 +116,7 @@ object N2 {
   //最大的元素最多被交换 N - 1 次，当且仅当其作为第一轮的被选中值时，j 想要找更小的值，其找了 N - 1 次，且每次都将右边的值扔到左边
 }
 
+
 object N3 extends App {
   val sort = new ThreeWayQuickSort[String]
   val items = Array("H","H","L","L","H","L","H","L")
