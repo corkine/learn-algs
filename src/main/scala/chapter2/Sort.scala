@@ -1,5 +1,6 @@
 package chapter2
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.Random
 
