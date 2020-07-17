@@ -301,3 +301,193 @@ object BSSTLargeFileTest extends App {
   source.close()
 }
 
+class BinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
+  extends OrderedSymbolTable[K,V] {
+
+  class Node(var key:K,
+             var value:V,
+             var N: Int,
+             var left: Node = null,
+             var right: Node = null) {
+    override def toString: String = s"[Node]$key-$value($N)"
+    def show: String = tools.Utils.withStringBuilder { sb =>
+      sb.append("\t\t").append(key).append("-").append(value).append(s"($N)").append("\n")
+      sb.append(if (left == null) "null" else left.show).append("\t\t\t\t")
+        .append(if (right == null) "null" else right.show)
+      sb.append("\n")
+    }
+  }
+
+  private var root: Node = _
+
+  def elementPrint(): Unit = print(if (root != null) root.show else "| null |")
+
+  private def size(node:Node) = if (node == null) 0 else node.N
+
+  @scala.annotation.tailrec
+  private def get(node: Node, key: K): V = {
+    if (node == null) return null
+    val cmp = key.compareTo(node.key)
+    if (cmp < 0) get(node.left, key)
+    else if (cmp > 0) get(node.right, key)
+    else node.value
+  }
+
+  override def get(key: K): V = get(root,key)
+
+  private def put(node: Node, key: K, value: V): Node = {
+    if (node == null) return new Node(key, value, 1)
+    val cmp = key.compareTo(node.key)
+    if (cmp < 0) node.left = put(node.left, key, value)
+    else if (cmp > 0) node.right = put(node.right, key, value)
+    else node.value = value
+    node.N = size(node.left) + size(node.right) + 1
+    node
+  }
+
+  override def put(key: K, value: V): Unit = root = put(root, key, value)
+
+  @scala.annotation.tailrec
+  private def min(node:Node): Node = node.left match {
+    case null => node
+    case _ => min(node.left)
+  }
+
+  override def min: K = min(root).key
+
+  @scala.annotation.tailrec
+  private def max(node:Node): Node = node.right match {
+    case null => node
+    case _ => max(node.right)
+  }
+
+  override def max: K = max(root).key
+
+  private def floor(node:Node, key:K): Node = {
+    if (node == null) return null
+    val cmp = key.compareTo(node.key)
+    if (cmp == 0) return node
+    if (cmp < 0) return floor(node.left, key)
+    val t = floor(node.right,key)
+    if (t != null) t else node
+  }
+
+  override def floor(key: K): K = {
+    val x = floor(root, key)
+    if (x == null) null else x.key
+  }
+
+  private def ceiling(node:Node, key:K): Node = {
+    if (node == null) return null
+    val cmp = key.compareTo(node.key)
+    if (cmp == 0) return node
+    if (cmp > 0) return ceiling(node.right, key)
+    val t = ceiling(node.left,key)
+    if (t != null) t else node
+  }
+
+  override def ceiling(key: K): K = {
+    val x = ceiling(root, key)
+    if (x == null) null else x.key
+  }
+
+  private def rank(x:Node, key:K): Int = {
+    if (x == null) return 0
+    val cmp = key.compareTo(x.key)
+    if (cmp < 0) rank(x.left, key)
+    else if (cmp > 0) 1 + size(x.left) + rank(x.right, key)
+    else size(x.left)
+  }
+
+  override def rank(key: K): Int = rank(root, key)
+
+  @scala.annotation.tailrec
+  private def select(x:Node, index:Int): Node = {
+    if (x == null) return null
+    val t = size(x.left)
+    if (t > index) select(x.left, index)
+    else if (t < index) select(x.right, index-t-1)
+    else x
+  }
+
+  override def select(index: Int): K = select(root, index).key
+
+  override def keysFrom(lo: K, hi: K): Iterable[K] = ???
+
+  private def deleteMin(x: Node): Node = {
+    if (x.left == null) return x.right
+    x.left = deleteMin(x.left)
+    x.N = size(x.left) + size(x.right) + 1
+    x
+  }
+
+  override def deleteMin(): Unit = root = deleteMin(root)
+
+  private def deleteMax(x: Node): Node = {
+    if (x.right == null) return x.left
+    x.right = deleteMax(x.right)
+    x.N = size(x.left) + size(x.right) + 1
+    x
+  }
+
+  override def deleteMax(): Unit = root = deleteMax(root)
+
+  private def delete(node:Node, key:K): Node = {
+    var x = node
+    if (x == null) return null
+    val cmp = key.compareTo(x.key)
+    if (cmp > 0) delete(x.right, key)
+    else if (cmp < 0) delete(x.left, key)
+    else {
+      if (x.right == null) return x.left
+      if (x.left == null) return x.right
+      val t = x
+      x = min(t.right)
+      x.right = deleteMin(t.right)
+      x.left = t.left
+    }
+    x.N = size(x.left) + size(x.right) + 1
+    x
+  }
+
+  override def delete(key: K): Unit = root = delete(root,key)
+
+  override def size: Int = size(root)
+}
+
+object BSTSTAPITest extends App {
+  val st = new BinarySearchTreeSymbolTable[String,Integer]()
+  st.put("A",1)
+  st.elementPrint()
+  st.put("B",2)
+  st.elementPrint()
+  st.put("C",3)
+  st.elementPrint()
+  st.put("B",8)
+  st.elementPrint()
+  println(st.get("A"))
+  println("min",st.min)
+  println("max",st.max)
+  st.delete("C")
+  st.elementPrint()
+  st.delete("B")
+  st.elementPrint()
+  /*st.elementPrint()
+  println(st)
+  st.keys.map(i => (i,st.get(i))).foreach(println)*/
+}
+
+object BSTSTLargeFileTest extends App {
+  val source = Source.fromFile("data/tale.txt")
+  val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
+  tools.Utils.ptime1 {
+    val resultData = new BinarySearchTreeSymbolTable[String,Integer]
+    data.foreach { word =>
+      if (!resultData.contains(word)) resultData.put(word,1)
+      else resultData.put(word,resultData.get(word) + 1)
+    }
+    //resultData.keys.foreach(println) //0.101s 比 Scala HashMap 慢了 1.9 倍
+  }
+  source.close()
+}
+
