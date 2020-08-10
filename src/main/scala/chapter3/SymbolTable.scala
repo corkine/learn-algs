@@ -320,20 +320,39 @@ class BinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
 
   private var root: Node = _
 
-  def elementPrint(): Unit = print(if (root != null) root.show else "| null |")
+  private def print(x:Node): Unit = {
+    if (x == null) return
+    print(x.left)
+    Predef.print(x.key + " ")
+    print(x.right)
+  }
+
+  def print(): Unit = {
+    print(root); println("")
+  }
 
   private def size(node:Node) = if (node == null) 0 else node.N
 
   @scala.annotation.tailrec
-  private def get(node: Node, key: K): V = {
+  private def getRec(node: Node, key: K): V = {
     if (node == null) return null
     val cmp = key.compareTo(node.key)
-    if (cmp < 0) get(node.left, key)
-    else if (cmp > 0) get(node.right, key)
+    if (cmp < 0) getRec(node.left, key)
+    else if (cmp > 0) getRec(node.right, key)
     else node.value
   }
 
-  override def get(key: K): V = get(root,key)
+  override def get(key: K): V = getFast(root,key)
+
+  def getFast(root: Node, key: K): V = {
+    var x = root
+    while (x != null) {
+      val cmp = key.compareTo(x.key)
+      if (cmp == 0) return x.value
+      else if (cmp < 0) x = x.left
+      else if (cmp > 0) x = x.right
+    }; null
+  }
 
   private def put(node: Node, key: K, value: V): Node = {
     if (node == null) return new Node(key, value, 1)
@@ -412,7 +431,22 @@ class BinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
 
   override def select(index: Int): K = select(root, index).key
 
-  override def keysFrom(lo: K, hi: K): Iterable[K] = ???
+  override def keysFrom(lo: K, hi: K): Iterable[K] = {
+    val q = mutable.Queue.empty[K]
+    keysFrom(root, q, lo, hi)
+    q
+  }
+
+  private def keysFrom(x:Node, queue: mutable.Queue[K], lo: K, hi:K): Unit = {
+    if (x == null) return
+    val cmplo = lo.compareTo(x.key)
+    val cmphi = hi.compareTo(x.key)
+    if (cmplo < 0) keysFrom(x.left, queue, lo, hi)
+    if (cmplo <= 0 && cmphi >= 0) queue.enqueue(x.key)
+    if (cmphi > 0) keysFrom(x.right, queue, lo, hi)
+  }
+
+  override def keys: Iterable[K] = keysFrom(min,max)
 
   private def deleteMin(x: Node): Node = {
     if (x.left == null) return x.right
@@ -458,23 +492,21 @@ class BinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
 object BSTSTAPITest extends App {
   val st = new BinarySearchTreeSymbolTable[String,Integer]()
   st.put("A",1)
-  st.elementPrint()
+  st.print()
   st.put("B",2)
-  st.elementPrint()
+  st.print()
   st.put("C",3)
-  st.elementPrint()
+  st.print()
   st.put("B",8)
-  st.elementPrint()
+  st.print()
   println(st.get("A"))
   println("min",st.min)
   println("max",st.max)
   st.delete("C")
-  st.elementPrint()
+  st.print()
   st.delete("B")
-  st.elementPrint()
-  /*st.elementPrint()
-  println(st)
-  st.keys.map(i => (i,st.get(i))).foreach(println)*/
+  st.print()
+  st.keys.map(i => (i,st.get(i))).foreach(println)
 }
 
 object BSTSTLargeFileTest extends App {
