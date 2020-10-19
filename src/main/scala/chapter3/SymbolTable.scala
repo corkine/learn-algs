@@ -239,9 +239,9 @@ class BinarySearchSymbolTable[K >:Null <:Comparable[K] :ClassTag, V >:Null :Clas
       }
       ks(N-1) = null
       vs(N-1) = null
+      if (N == ks.length/2) resize(N / 2)
+      N -= 1
     }
-    if (N == ks.length/2) resize(N / 2)
-    N -= 1
   }
 
   override def size: Int = N
@@ -253,13 +253,13 @@ class BinarySearchSymbolTable[K >:Null <:Comparable[K] :ClassTag, V >:Null :Clas
   override def select(index: Int): K = ks(index)
 
   //如果越界则直接报错
-  override def floor(value: K): K = ks(rank(value) + 1)
+  override def floor(value: K): K = if (ks.contains(value)) ks(rank(value)) else ks(rank(value) - 1)
 
   override def ceiling(value: K): K = ks(rank(value))
 
   override def keysFrom(lo: K, hi: K): Iterable[K] = {
     val queue = mutable.Queue.empty[K]
-    val (llo, hhi) = (rank(lo),rank(hi))
+    val (llo, hhi) = (rank(lo), if (ks.contains(hi)) rank(hi) else rank(hi) - 1)
     (llo until hhi).foreach { i => queue.enqueue(ks(i))}
     if (contains(hi)) queue.enqueue(ks(hhi))
     queue
