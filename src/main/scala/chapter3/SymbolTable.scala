@@ -523,3 +523,293 @@ object BSTSTLargeFileTest extends App {
   source.close()
 }
 
+class RedBlackBinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
+  extends OrderedSymbolTable[K,V] {
+
+  type Color = Boolean
+  val Red: Color = true
+  val Black: Color = false
+  implicit class SuperColor(a:Color) {
+    def isRed: Boolean = a
+    def isBlack: Boolean = !a
+  }
+
+  class Node(var key:K,
+             var value:V,
+             var N: Int,
+             var color: Color = Red,
+             var left: Node = null,
+             var right: Node = null) {
+    override def toString: String = s"[Node]$key-$value-Red/$color($N)"
+    def show: String = tools.Utils.withStringBuilder { sb =>
+      sb.append("\t\t").append(key).append("-").append(value).append(s"($N)").append("\n")
+      sb.append(if (left == null) "null" else left.show).append("\t\t\t\t")
+        .append(if (right == null) "null" else right.show)
+      sb.append("\n")
+    }
+  }
+
+  private def isRed(node:Node):Boolean = node.color == Red
+
+  private var root: Node = _
+
+  private def print(x:Node): Unit = {
+    if (x == null) return
+    print(x.left)
+    Predef.print(x.key + " ")
+    print(x.right)
+  }
+
+  def print(): Unit = {
+    print(root); println("")
+  }
+
+  private def rotateLeft(h:Node):Node = {
+    val x = h.right
+    h.right = x.left
+    x.left = h
+    x.color = h.color
+    h.color = Red
+    x.N = h.N
+    h.N = 1 + size(h.left) + size(h.right)
+    x
+  }
+
+  private def rotateRight(h:Node):Node = {
+    val x = h.left
+    h.left = x.right
+    x.right = h
+    x.color = h.color
+    h.color = Red
+    x.N = h.N
+    h.N = 1 + size(h.left) + size(h.right)
+    x
+  }
+
+  private def flipColor(h:Node): Unit = {
+    h.color = !h.color
+    h.left.color = !h.left.color
+    h.right.color = !h.right.color
+  }
+
+  private def size(node:Node) = if (node == null) 0 else node.N
+
+  override def get(key: K): V = get(root,key)
+
+  def get(root: Node, key: K): V = {
+    var x = root
+    while (x != null) {
+      val cmp = key.compareTo(x.key)
+      if (cmp == 0) return x.value
+      else if (cmp < 0) x = x.left
+      else if (cmp > 0) x = x.right
+    }; null
+  }
+
+  private def put(node: Node, key: K, value: V): Node = {
+    var h = node
+    if (h == null) return new Node(key, value, 1, Red)
+    val cmp = key.compareTo(h.key)
+    if (cmp < 0) h.left = put(h.left, key, value)
+    else if (cmp > 0) h.right = put(h.right, key, value)
+    else h.value = value
+
+    // === 插入新节点后并不调用此堆栈，而是弹出一层后，h 变为上一层父节点再调用 ===
+    // 一石二鸟，下面这句不仅用于新键介于二者之间的插入时第一步处理，
+    // 还用于翻转后变红父键右链接/其他情况单纯右链接的检测和处理
+    if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h)
+    // 用于新键最小时第一步或者新键介于二者之间的插入时第二步的处理
+    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
+    // 用于各种情况下的颜色翻转，如果翻转到根节点，则 BST 高度 + 1
+    if (isRed(h.left) && isRed(h.right)) flipColor(h)
+    // === 插入新节点后并不调用此堆栈，而是弹出一层后，h 变为上一层父节点再调用 ===
+    h.N = size(h.left) + size(h.right) + 1
+    h
+  }
+
+  private def put234Tree(node: Node, key: K, value: V): Node = {
+    var h = node
+    if (h == null) return new Node(key, value, 1, Red)
+    if (isRed(h.left) && isRed(h.right)) flipColor(h)
+
+    val cmp = key.compareTo(h.key)
+    if (cmp < 0) h.left = put(h.left, key, value)
+    else if (cmp > 0) h.right = put(h.right, key, value)
+    else h.value = value
+
+    if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h)
+    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
+    h.N = size(h.left) + size(h.right) + 1
+    h
+  }
+
+  override def put(key: K, value: V): Unit = {
+    root = put(root, key, value); root.color = Black
+  }
+
+  @scala.annotation.tailrec
+  private def min(node:Node): Node = node.left match {
+    case null => node
+    case _ => min(node.left)
+  }
+
+  override def min: K = min(root).key
+
+  @scala.annotation.tailrec
+  private def max(node:Node): Node = node.right match {
+    case null => node
+    case _ => max(node.right)
+  }
+
+  override def max: K = max(root).key
+
+  private def floor(node:Node, key:K): Node = {
+    if (node == null) return null
+    val cmp = key.compareTo(node.key)
+    if (cmp == 0) return node
+    if (cmp < 0) return floor(node.left, key)
+    val t = floor(node.right,key)
+    if (t != null) t else node
+  }
+
+  override def floor(key: K): K = {
+    val x = floor(root, key)
+    if (x == null) null else x.key
+  }
+
+  private def ceiling(node:Node, key:K): Node = {
+    if (node == null) return null
+    val cmp = key.compareTo(node.key)
+    if (cmp == 0) return node
+    if (cmp > 0) return ceiling(node.right, key)
+    val t = ceiling(node.left,key)
+    if (t != null) t else node
+  }
+
+  override def ceiling(key: K): K = {
+    val x = ceiling(root, key)
+    if (x == null) null else x.key
+  }
+
+  private def rank(x:Node, key:K): Int = {
+    if (x == null) return 0
+    val cmp = key.compareTo(x.key)
+    if (cmp < 0) rank(x.left, key)
+    else if (cmp > 0) 1 + size(x.left) + rank(x.right, key)
+    else size(x.left)
+  }
+
+  override def rank(key: K): Int = rank(root, key)
+
+  @scala.annotation.tailrec
+  private def select(x:Node, index:Int): Node = {
+    if (x == null) return null
+    val t = size(x.left)
+    if (t > index) select(x.left, index)
+    else if (t < index) select(x.right, index-t-1)
+    else x
+  }
+
+  override def select(index: Int): K = select(root, index).key
+
+  override def keysFrom(lo: K, hi: K): Iterable[K] = {
+    val q = mutable.Queue.empty[K]
+    keysFrom(root, q, lo, hi)
+    q
+  }
+
+  private def keysFrom(x:Node, queue: mutable.Queue[K], lo: K, hi:K): Unit = {
+    if (x == null) return
+    val cmplo = lo.compareTo(x.key)
+    val cmphi = hi.compareTo(x.key)
+    if (cmplo < 0) keysFrom(x.left, queue, lo, hi)
+    if (cmplo <= 0 && cmphi >= 0) queue.enqueue(x.key)
+    if (cmphi > 0) keysFrom(x.right, queue, lo, hi)
+  }
+
+  override def keys: Iterable[K] = keysFrom(min,max)
+
+  override def deleteMin(): Unit = {
+    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
+    root = deleteMin(root)
+    if (!isEmpty) root.color = Black
+  }
+
+  private def deleteMin(x: Node): Node = {
+    var h = x
+    if (h.left == null) return null
+    if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h.left)
+    h.left = deleteMin(h.left)
+    balance(h)
+  }
+
+  private def moveRedLeft(node:Node): Node = {
+    var h = node
+    flipColor(h)
+    if (isRed(h.right.left)) {
+      h.right = rotateRight(h.right)
+      h = rotateLeft(h)
+      flipColor(h)
+    }; h
+  }
+
+  private def balance(node:Node): Node = {
+    var h = node
+    if (isRed(h.right)) h = rotateLeft(h)
+    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
+    if (isRed(h.left) && isRed(h.right)) flipColor(h)
+    h.N = size(h.left) + size(h.right) + 1; h
+  }
+
+  override def deleteMax(): Unit = {
+    if (!isRed(root.left) & !isRed(root.right)) root.color = Red
+    root = deleteMax(root)
+    if (!isEmpty) root.color = Black
+  }
+
+  private def deleteMax(node: Node): Node = {
+    var h = node
+    if (isRed(h.left)) h = rotateRight(h)
+    if (h.right == null) return null
+    if (!isRed(h.right) & !isRed(h.right.left)) h = moveRedRight(h)
+    h.right = deleteMax(h.right)
+    balance(h)
+  }
+
+  private def moveRedRight(node:Node): Node = {
+    var h = node
+    flipColor(h)
+    if (!isRed(h.left.left)) {
+      h = rotateRight(h)
+      flipColor(h)
+    }; h
+  }
+
+  private def delete(node:Node, key:K): Node = {
+    var h = node
+    if (key.compareTo(h.key) < 0) {
+      if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h)
+      h.left = delete(h.left,key)
+    } else {
+      if (isRed(h.left)) h = rotateRight(h)
+      if (key.compareTo(h.key) == 0 && (h.right == null)) return null
+      if (!isRed(h.right) && !isRed(h.right.left)) h = moveRedRight(h)
+      if (key.compareTo(h.key) == 0) {
+        h.value = get(h.right, min(h.right).key)
+        h.key = min(h.right).key
+        h.right = deleteMin(h.right)
+      } else {
+        h.right = delete(h.right,key)
+      }
+    }
+    balance(h)
+  }
+
+  override def delete(key: K): Unit = {
+    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
+    root = delete(root,key)
+    if (!isEmpty) root.color = Black
+  }
+
+  override def size: Int = size(root)
+}
