@@ -529,74 +529,27 @@ class RedBlackBinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
   type Color = Boolean
   val Red: Color = true
   val Black: Color = false
-  implicit class SuperColor(a:Color) {
-    def isRed: Boolean = a
-    def isBlack: Boolean = !a
-  }
 
   class Node(var key:K,
              var value:V,
-             var N: Int,
+             var size: Int,
              var color: Color = Red,
              var left: Node = null,
              var right: Node = null) {
-    override def toString: String = s"[Node]$key-$value-Red/$color($N)"
-    def show: String = tools.Utils.withStringBuilder { sb =>
-      sb.append("\t\t").append(key).append("-").append(value).append(s"($N)").append("\n")
-      sb.append(if (left == null) "null" else left.show).append("\t\t\t\t")
-        .append(if (right == null) "null" else right.show)
-      sb.append("\n")
-    }
+    override def toString: String = s"[Node]$key-$value-Red/$color($size)"
   }
-
-  private def isRed(node:Node):Boolean = node.color == Red
 
   private var root: Node = _
 
-  private def print(x:Node): Unit = {
-    if (x == null) return
-    print(x.left)
-    Predef.print(x.key + " ")
-    print(x.right)
-  }
+  private def isRed(node:Node) = if (node == null) false else node.color == Red
 
-  def print(): Unit = {
-    print(root); println("")
-  }
+  private def size(node:Node) = if (node == null) 0 else node.size
 
-  private def rotateLeft(h:Node):Node = {
-    val x = h.right
-    h.right = x.left
-    x.left = h
-    x.color = h.color
-    h.color = Red
-    x.N = h.N
-    h.N = 1 + size(h.left) + size(h.right)
-    x
-  }
+  override def size: Int = size(root)
 
-  private def rotateRight(h:Node):Node = {
-    val x = h.left
-    h.left = x.right
-    x.right = h
-    x.color = h.color
-    h.color = Red
-    x.N = h.N
-    h.N = 1 + size(h.left) + size(h.right)
-    x
-  }
+  override def isEmpty: Boolean = root == null
 
-  private def flipColor(h:Node): Unit = {
-    h.color = !h.color
-    h.left.color = !h.left.color
-    h.right.color = !h.right.color
-  }
-
-  private def size(node:Node) = if (node == null) 0 else node.N
-
-  override def get(key: K): V = get(root,key)
-
-  def get(root: Node, key: K): V = {
+  private def get(root: Node, key: K): V = {
     var x = root
     while (x != null) {
       val cmp = key.compareTo(x.key)
@@ -604,6 +557,21 @@ class RedBlackBinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
       else if (cmp < 0) x = x.left
       else if (cmp > 0) x = x.right
     }; null
+  }
+
+  override def get(key: K): V = {
+    if (key == null) throw new IllegalArgumentException("key can't be null.")
+    else get(root,key)
+  }
+
+  override def contains(key: K): Boolean = get(key) != null
+
+  override def put(key: K, value: V): Unit = {
+    if (key == null) throw new IllegalArgumentException("put() can't be a null.")
+    if (value == null) {
+      delete(key); return
+    }
+    root = put(root, key, value); root.color = Black
   }
 
   private def put(node: Node, key: K, value: V): Node = {
@@ -623,28 +591,118 @@ class RedBlackBinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
     // 用于各种情况下的颜色翻转，如果翻转到根节点，则 BST 高度 + 1
     if (isRed(h.left) && isRed(h.right)) flipColor(h)
     // === 插入新节点后并不调用此堆栈，而是弹出一层后，h 变为上一层父节点再调用 ===
-    h.N = size(h.left) + size(h.right) + 1
+    h.size = size(h.left) + size(h.right) + 1
     h
   }
 
-  private def put234Tree(node: Node, key: K, value: V): Node = {
+  private def rotateLeft(h:Node):Node = {
+    val x = h.right
+    h.right = x.left
+    x.left = h
+    x.color = x.left.color
+    x.left.color = Red
+    x.size = h.size
+    h.size = 1 + size(h.left) + size(h.right)
+    x
+  }
+
+  private def rotateRight(h:Node):Node = {
+    val x = h.left
+    h.left = x.right
+    x.right = h
+    x.color = x.right.color
+    x.right.color = Red
+    x.size = h.size
+    h.size = 1 + size(h.left) + size(h.right)
+    x
+  }
+
+  private def flipColor(h:Node): Unit = {
+    h.color = !h.color
+    h.left.color = !h.left.color
+    h.right.color = !h.right.color
+  }
+
+  private def moveRedLeft(node:Node): Node = {
     var h = node
-    if (h == null) return new Node(key, value, 1, Red)
-    if (isRed(h.left) && isRed(h.right)) flipColor(h)
-
-    val cmp = key.compareTo(h.key)
-    if (cmp < 0) h.left = put(h.left, key, value)
-    else if (cmp > 0) h.right = put(h.right, key, value)
-    else h.value = value
-
-    if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h)
-    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
-    h.N = size(h.left) + size(h.right) + 1
-    h
+    flipColor(h)
+    if (isRed(h.right.left)) {
+      h.right = rotateRight(h.right)
+      h = rotateLeft(h)
+      flipColor(h)
+    }; h
   }
 
-  override def put(key: K, value: V): Unit = {
-    root = put(root, key, value); root.color = Black
+  private def moveRedRight(node:Node): Node = {
+    var h = node
+    flipColor(h)
+    if (isRed(h.left.left)) {
+      h = rotateRight(h)
+      flipColor(h)
+    }; h
+  }
+
+  private def balance(node:Node): Node = {
+    var h = node
+    if (isRed(h.right)) h = rotateLeft(h)
+    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
+    if (isRed(h.left) && isRed(h.right)) flipColor(h)
+    h.size = size(h.left) + size(h.right) + 1; h
+  }
+
+  override def deleteMin(): Unit = {
+    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
+    root = deleteMin(root)
+    if (!isEmpty) root.color = Black
+  }
+
+  private def deleteMin(x: Node): Node = {
+    var h = x
+    if (h.left == null) return null
+    if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h.left)
+    h.left = deleteMin(h.left)
+    balance(h)
+  }
+
+  override def deleteMax(): Unit = {
+    if (!isRed(root.left) & !isRed(root.right)) root.color = Red
+    root = deleteMax(root)
+    if (!isEmpty) root.color = Black
+  }
+
+  private def deleteMax(node: Node): Node = {
+    var h = node
+    if (isRed(h.left)) h = rotateRight(h)
+    if (h.right == null) return null
+    if (!isRed(h.right) & !isRed(h.right.left)) h = moveRedRight(h)
+    h.right = deleteMax(h.right)
+    balance(h)
+  }
+
+  private def delete(node:Node, key:K): Node = {
+    var h = node
+    if (key.compareTo(h.key) < 0) {
+      if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h)
+      h.left = delete(h.left,key)
+    } else {
+      if (isRed(h.left)) h = rotateRight(h)
+      if (key.compareTo(h.key) == 0 && (h.right == null)) return null
+      if (!isRed(h.right) && !isRed(h.right.left)) h = moveRedRight(h)
+      if (key.compareTo(h.key) == 0) {
+        h.value = get(h.right, min(h.right).key)
+        h.key = min(h.right).key
+        h.right = deleteMin(h.right)
+      } else {
+        h.right = delete(h.right,key)
+      }
+    }
+    balance(h)
+  }
+
+  override def delete(key: K): Unit = {
+    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
+    root = delete(root,key)
+    if (!isEmpty) root.color = Black
   }
 
   @scala.annotation.tailrec
@@ -728,88 +786,32 @@ class RedBlackBinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
   }
 
   override def keys: Iterable[K] = keysFrom(min,max)
+}
 
-  override def deleteMin(): Unit = {
-    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
-    root = deleteMin(root)
-    if (!isEmpty) root.color = Black
-  }
+object RedBlackBSTSTAPITest extends App {
+  val st = new RedBlackBinarySearchTreeSymbolTable[String,Integer]()
+  st.put("A",1)
+  st.put("B",2)
+  st.put("C",3)
+  st.put("B",8)
+  println(st.get("A"))
+  println("min",st.min)
+  println("max",st.max)
+  //st.delete("C")
+  //st.delete("B")
+  st.keys.map(i => (i,st.get(i))).foreach(println)
+}
 
-  private def deleteMin(x: Node): Node = {
-    var h = x
-    if (h.left == null) return null
-    if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h.left)
-    h.left = deleteMin(h.left)
-    balance(h)
-  }
-
-  private def moveRedLeft(node:Node): Node = {
-    var h = node
-    flipColor(h)
-    if (isRed(h.right.left)) {
-      h.right = rotateRight(h.right)
-      h = rotateLeft(h)
-      flipColor(h)
-    }; h
-  }
-
-  private def balance(node:Node): Node = {
-    var h = node
-    if (isRed(h.right)) h = rotateLeft(h)
-    if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h)
-    if (isRed(h.left) && isRed(h.right)) flipColor(h)
-    h.N = size(h.left) + size(h.right) + 1; h
-  }
-
-  override def deleteMax(): Unit = {
-    if (!isRed(root.left) & !isRed(root.right)) root.color = Red
-    root = deleteMax(root)
-    if (!isEmpty) root.color = Black
-  }
-
-  private def deleteMax(node: Node): Node = {
-    var h = node
-    if (isRed(h.left)) h = rotateRight(h)
-    if (h.right == null) return null
-    if (!isRed(h.right) & !isRed(h.right.left)) h = moveRedRight(h)
-    h.right = deleteMax(h.right)
-    balance(h)
-  }
-
-  private def moveRedRight(node:Node): Node = {
-    var h = node
-    flipColor(h)
-    if (!isRed(h.left.left)) {
-      h = rotateRight(h)
-      flipColor(h)
-    }; h
-  }
-
-  private def delete(node:Node, key:K): Node = {
-    var h = node
-    if (key.compareTo(h.key) < 0) {
-      if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h)
-      h.left = delete(h.left,key)
-    } else {
-      if (isRed(h.left)) h = rotateRight(h)
-      if (key.compareTo(h.key) == 0 && (h.right == null)) return null
-      if (!isRed(h.right) && !isRed(h.right.left)) h = moveRedRight(h)
-      if (key.compareTo(h.key) == 0) {
-        h.value = get(h.right, min(h.right).key)
-        h.key = min(h.right).key
-        h.right = deleteMin(h.right)
-      } else {
-        h.right = delete(h.right,key)
-      }
+object RedBlackBSTSTLargeFileTest extends App {
+  val source = Source.fromFile("data/tale.txt")
+  val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
+  tools.Utils.ptime1 {
+    val resultData = new RedBlackBinarySearchTreeSymbolTable[String,Integer]
+    data.foreach { word =>
+      if (!resultData.contains(word)) resultData.put(word,1)
+      else resultData.put(word,resultData.get(word) + 1)
     }
-    balance(h)
+    //resultData.keys.foreach(println) //0.125s 比 Scala HashMap 慢了 1.9 倍
   }
-
-  override def delete(key: K): Unit = {
-    if (!isRed(root.left) && !isRed(root.right)) root.color = Red
-    root = delete(root,key)
-    if (!isEmpty) root.color = Black
-  }
-
-  override def size: Int = size(root)
+  source.close()
 }
