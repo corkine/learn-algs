@@ -1,6 +1,6 @@
 package chapter3
 
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -48,7 +48,7 @@ trait OrderedSymbolTable[K <:Comparable[K], V]
   override def keys: Iterable[K] = keysFrom(min,max)
 }
 
-object Test extends App {
+object ScalaHashMapTest extends App {
   val source = Source.fromFile("data/tale.txt")
   val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
   tools.Utils.ptime3 {
@@ -69,12 +69,13 @@ object Test extends App {
  * @tparam K Key 键
  * @tparam V Value 值
  */
-class SequentialSearchSymbolTable[K,V >: Null] extends SymbolTable[K,V] {
+class SequentialSearchSymbolTable[K >: Null ,V >: Null] extends SymbolTable[K,V] {
   class Node(val key:K, var value:V, var next: Node) {
     def content: String =
       s"| $key,$value ${if (next != null) next.content else "| null"}"
   }
   private var first: Node = _
+  def head: K = if (first != null) first.key else null
   override def put(key: K, value: V): Unit = {
     var now = first
     while (now != null) {
@@ -512,7 +513,7 @@ object BSTSTAPITest extends App {
 object BSTSTLargeFileTest extends App {
   val source = Source.fromFile("data/tale.txt")
   val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
-  tools.Utils.ptime1 {
+  tools.Utils.ptime3 {
     val resultData = new BinarySearchTreeSymbolTable[String,Integer]
     data.foreach { word =>
       if (!resultData.contains(word)) resultData.put(word,1)
@@ -805,7 +806,7 @@ object RedBlackBSTSTAPITest extends App {
 object RedBlackBSTSTLargeFileTest extends App {
   val source = Source.fromFile("data/tale.txt")
   val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
-  tools.Utils.ptime1 {
+  tools.Utils.ptime3 {
     val resultData = new RedBlackBinarySearchTreeSymbolTable[String,Integer]
     data.foreach { word =>
       if (!resultData.contains(word)) resultData.put(word,1)
@@ -814,4 +815,113 @@ object RedBlackBSTSTLargeFileTest extends App {
     //resultData.keys.foreach(println) //0.125s 比 Scala HashMap 慢了 1.9 倍
   }
   source.close()
+}
+
+class SeparateChainingHashSymbolTable[K >: Null <: Comparable[K] :ClassTag, V >:Null :ClassTag]
+  extends SymbolTable[K,V] {
+
+  private var M = 1000
+  private var N  = 0
+  private var data: Array[SequentialSearchSymbolTable[K, V]] = (1 to M).map(_ => new SequentialSearchSymbolTable[K,V]).toArray
+
+  private def performData(): Unit = {
+    if (M < N / 7) {
+      M = 2 * M
+      val news = (1 to M).map(_ => new SequentialSearchSymbolTable[K,V]).toArray
+      data.foreach { s =>
+        if (s != null & s.head != null) news(hash(s.head)) = s
+      }
+      news.indices.foreach(i => if (news(i) == null) news(i) = new SequentialSearchSymbolTable[K,V])
+      data = news
+    } else if (M > N / 3 && M > 1000) {
+      M = M / 2
+      val news = (1 to M).map(_ => new SequentialSearchSymbolTable[K,V]).toArray
+      data.foreach { s =>
+        if (s != null & s.head != null) news(hash(s.head)) = s
+      }
+      news.indices.foreach(i => if (news(i) == null) news(i) = new SequentialSearchSymbolTable[K,V])
+      data = news
+    }
+  }
+
+  private def hash(k:K): Int = (k.hashCode() & 0x7fffffff) % M
+
+  override def put(key: K, value: V): Unit = {
+    if (get(key) != null) N += 1
+    data(hash(key)).put(key,value)
+    performData()
+  }
+
+  override def get(key: K): V = data(hash(key)).get(key)
+
+  override def delete(key: K): Unit = {
+    if (get(key) != null) N -= 1
+    data(hash(key)).delete(key)
+    performData()
+  }
+
+  override def size: Int = N
+
+  override def keys: Iterable[K] = data.foldLeft(new Array[K](0))(_ ++ _.keys)
+}
+
+object SCHSTAPITest extends App {
+  val st = new SeparateChainingHashSymbolTable[String,Integer]()
+  st.put("A",1)
+  st.put("B",2)
+  st.put("C",3)
+  st.put("B",8)
+  println(st.get("A"))
+  //st.delete("C")
+  //st.delete("B")
+  st.keys.map(i => (i,st.get(i))).foreach(println)
+}
+
+object SCHSTLargeFileTest extends App {
+  val source = Source.fromFile("data/tale.txt")
+  val data = source.getLines().toArray.flatMap(_.split(" ").map(_.trim))
+  tools.Utils.ptime3 {
+    val resultData = new SeparateChainingHashSymbolTable[String,Integer]
+    data.foreach { word =>
+      if (!resultData.contains(word)) resultData.put(word,1)
+      else resultData.put(word,resultData.get(word) + 1)
+    }
+    //resultData.keys.foreach(println) //0.125s 比 Scala HashMap 慢了 1.9 倍
+  }
+  source.close()
+}
+
+class LinearProbingHashSymbolTable[K >: Null <: Comparable[K] :ClassTag, V >:Null :ClassTag]
+  extends SymbolTable[K,V] {
+
+  var M: Int = 30001
+  var ks: Array[K] = new Array(M)
+  var vs: Array[V] = new Array(M)
+
+  private def hash(k:K):Int = (k.hashCode() & 0x7fffffff) % M
+
+  override def put(key: K, value: V): Unit = {
+    var i = hash(key)
+    var stop = false
+    while (ks(i) != null && !stop) {
+      if (ks(i).equals(key)) stop = true
+      i = (i + 1) % M
+    }
+    ks(i) = key
+    vs(i) = value
+  }
+
+  override def get(key: K): V = {
+    var i = hash(key)
+    while (ks(i) != null) {
+      if (ks(i).equals(key)) return vs(i)
+      i = (i + 1) % M
+    }; null
+  }
+
+  override def delete(key: K): Unit = ???
+
+  override def size: Int = ???
+
+  override def keys: Iterable[K] = ???
 }
