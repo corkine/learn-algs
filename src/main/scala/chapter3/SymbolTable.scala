@@ -1,6 +1,6 @@
 package chapter3
 
-import scala.collection.{breakOut, mutable}
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.reflect.ClassTag
