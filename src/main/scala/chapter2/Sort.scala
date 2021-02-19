@@ -17,7 +17,6 @@ abstract class SortBasic[T <: Comparable[T]] {
     }; true
   }
 }
-object SortUtils extends SortBasic
 
 class Selection[T<: Comparable[T]] extends SortBasic[T] {
   def sort(a:Array[T]): Unit = {

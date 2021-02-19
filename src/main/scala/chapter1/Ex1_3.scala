@@ -48,7 +48,7 @@ object N4 extends App {
   val wrong = "[(])"
   val wrong2 = wrong + "}"
   val stack = mutable.Stack.empty[String]
-  def check = { in:String =>
+  def check = { (in:String) =>
     var bad = false
     in.toCharArray.map(_.toString).foreach {
       case a@("[" | "(" | "{") => stack.push(a)
@@ -60,11 +60,11 @@ object N4 extends App {
     stack.clear()
     ans
   }
-  println(check(right),check(wrong),check(wrong2))
+  println((check(right),check(wrong),check(wrong2)))
 }
 
 object N5_6_7 extends App {
-  def check = { n:Int =>
+  def check = { (n:Int) =>
     var N = n
     val stack = new mutable.Stack[Int]()
     while (N > 0) {
@@ -75,7 +75,7 @@ object N5_6_7 extends App {
   }
   check(50)
 
-  def check2 = { q: mutable.Queue[String] =>
+  def check2 = { (q: mutable.Queue[String]) =>
     val stack = new mutable.Stack[String]()
     while (q.nonEmpty) {
       stack.push(q.dequeue())
@@ -115,7 +115,7 @@ object N8 extends App {
 }
 
 object N9 extends App {
-  def fix = { in:String =>
+  def fix = { (in:String) =>
     val ops = mutable.Stack.empty[String]
     val eles = mutable.Stack.empty[String]
     in.toCharArray.map(_.toString.trim).filter(_.nonEmpty).foreach {
@@ -136,7 +136,7 @@ object N9 extends App {
 }
 
 object N10 extends App {
-  def infixToPostfix = { in:String =>
+  def infixToPostfix = { (in:String) =>
     val ops = mutable.Stack.empty[String]
     val eles = mutable.Stack.empty[String]
     in.toCharArray.map(_.toString.trim).filter(_.nonEmpty).foreach {
@@ -157,7 +157,7 @@ object N10 extends App {
 }
 
 object N11 extends App {
-  def evaluatePostfix = { in:String =>
+  def evaluatePostfix = { (in:String) =>
     val ops = mutable.Stack.empty[String]
     val eles = mutable.Stack.empty[String]
     in.toCharArray.map(_.toString.trim).filter(_.nonEmpty).foreach {
@@ -201,7 +201,7 @@ object N14 extends App {
     override def size: Int = N
     override def isEmpty: Boolean = N == 0
     override def enqueue(t: String): Unit = {
-      println("enqueue",t)
+      println("enqueue" -> t)
       if (lastIndex + 1 == a.length - 1) resize(a.length * 2)
       a.indices.foreach(i => {
         val now = a(i)
@@ -291,7 +291,7 @@ object N15 extends App {
   (1 until key).foreach { _ =>
     stack.pop()
   }
-  println("It is", stack.pop())
+  println("It is" -> stack.pop())
 }
 
 object N16 extends App {
@@ -601,6 +601,8 @@ object N28 extends App {
 object N29 extends App {
   import chapter1.Read1_3.Queue
   class CycleListQueue[T] extends Queue[T] {
+    override def isEmpty: Boolean = false
+    override def size: Int = 0
     var lastN: Node[T] = Node[T]()
     override def enqueue(t: T): Unit = {
       if (lastN.element == null) {
@@ -693,9 +695,9 @@ object N31 extends App {
   }
   object DoubleNode {
     def apply[T](): DoubleNode[T] = new DoubleNode[T]() {
-      override var element: T = _
-      override var head: DoubleNode[T] = _
-      override var next: DoubleNode[T] = _
+      var element: T = _
+      var head: DoubleNode[T] = _
+      var next: DoubleNode[T] = _
     }
   }
   val first = DoubleNode[Int]()
@@ -777,7 +779,7 @@ object N31 extends App {
     in match {
       case i if i == null => println("================")
       case o =>
-        println("[NODE]",o.element)
+        println("[NODE]" -> o.element)
         printNode(o.next)
     }
   }

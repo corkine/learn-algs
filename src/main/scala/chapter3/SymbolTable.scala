@@ -324,7 +324,7 @@ class BinarySearchTreeSymbolTable[K >:Null <:Comparable[K], V >:Null]
   private def print(x:Node): Unit = {
     if (x == null) return
     print(x.left)
-    Predef.print(x.key + " ")
+    Predef.print(x.key.toString + " ")
     print(x.right)
   }
 
@@ -501,8 +501,8 @@ object BSTSTAPITest extends App {
   st.put("B",8)
   st.print()
   println(st.get("A"))
-  println("min",st.min)
-  println("max",st.max)
+  println("min" -> st.min)
+  println("max" -> st.max)
   st.delete("C")
   st.print()
   st.delete("B")
@@ -796,8 +796,8 @@ object RedBlackBSTSTAPITest extends App {
   st.put("C",3)
   st.put("B",8)
   println(st.get("A"))
-  println("min",st.min)
-  println("max",st.max)
+  println("min" -> st.min)
+  println("max" -> st.max)
   //st.delete("C")
   //st.delete("B")
   st.keys.map(i => (i,st.get(i))).foreach(println)

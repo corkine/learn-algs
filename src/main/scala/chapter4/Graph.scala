@@ -390,11 +390,11 @@ object SimpleDigraph extends App {
 }
 
 class DirectedDFS private() {
-  def this(G:Digraph, s:Int) {
+  def this(G:Digraph, s:Int) = {
     this(); this.G = G; this.s = s
     dfs(G,s)
   }
-  def this(G:Digraph, source:mutable.Iterable[Int]) {
+  def this(G:Digraph, source:mutable.Iterable[Int]) = {
     this(); this.G = G; this.source = source;
     this.source.foreach { s => if (!m_marked(s)) dfs(G,s) }
   }
@@ -423,7 +423,7 @@ class SimpleDirectedCycle(val G:Digraph) extends DirectedCycle {
   private val marked = new Array[Boolean](G.V)
   private val edgeTo = Array.fill(G.V)(0)
   private val onStack = new Array[Boolean](G.V)
-  val cycle = new mutable.Stack[Int]()
+  val cycle: mutable.Stack[Int] = new mutable.Stack[Int]()
 
   (0 until G.V).foreach { v => if (!marked(v)) dfs(G,v); }
 

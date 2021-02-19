@@ -36,6 +36,8 @@ trait Stack[T] extends Iterable[T] {
 
 object SimpleEvaluate extends App {
   class SimpleStack[T] extends Stack[T] {
+    override def isEmpty: Boolean = false
+    override def size: Int = 0
     private val buffer = new ArrayBuffer[T]()
     override def push(t: T): Unit = buffer.prepend(t)
     override def pop(): T = buffer.remove(0)
@@ -78,9 +80,9 @@ trait StackTest {
   //to be or not to - be - - that - - - is
   StdIn.readLine("Input words>>> ").split(" ").map(_.trim).foreach {
     case "-" =>
-      if (!stack.isEmpty) println("Pop ", stack.pop())
+      if (!stack.isEmpty) println("Pop " -> stack.pop())
     case item =>
-      println("Pushing ", item); stack.push(item)
+      println("Pushing " -> item); stack.push(item)
   }
   println("(" + stack.size + " left on stack)")
 }
@@ -95,7 +97,7 @@ object FixedCapacityStackOfStringsDemo extends App with StackTest {
     def isFull:Boolean = N == cap
     def size:Int = N
   }
-  lazy val stack = new FixedCapacityStackOfStrings(100) with TStack[String]
+  val stack = new FixedCapacityStackOfStrings(100) with TStack[String]
 }
 
 object FixedCapacityStackDemo extends App with StackTest {
@@ -107,7 +109,7 @@ object FixedCapacityStackDemo extends App with StackTest {
     def isEmpty:Boolean = N == 0
     def size:Int = N
   }
-  lazy val stack = new FixedCapacityStack[String](100) with TStack[String]
+  val stack = new FixedCapacityStack[String](100) with TStack[String]
 }
 
 /**
@@ -132,7 +134,7 @@ object FlexibleCapacityStackDemo extends App with StackTest {
     override def isEmpty:Boolean = N == 0
     override def size:Int = N
     private def resize(max:Int):Unit = {
-      println("resizing from ", a.length,"to ",max)
+      println(("resizing from ", a.length,"to ",max))
       val temp = new Array[T](max)
       if (a.length < max) { //如果是扩张
         a.indices.foreach { i => temp(i) = a(i) }
@@ -146,8 +148,8 @@ object FlexibleCapacityStackDemo extends App with StackTest {
       override def next(): T = { n += 1; a(n - 1) }
     }
   }
-  lazy val stack = new FlexStack[String] with TStack[String]
-  stack.iterator.foreach(println)
+  val stack = new FlexStack[String] with TStack[String]
+  //stack.iterator.foreach(println)
 }
 
 //上述为《算法》1.3.1 API 及其各自功能， 1.3.2 基于数组的实现： Bag、Queue、Stack 的实现（可伸缩，可迭代）
@@ -159,8 +161,8 @@ trait Node[T] {
 }
 object Node {
   def apply[T](): Node[T] = new Node[T]() {
-    override var element: T = _
-    override var next: Node[T] = _
+    var element: T = _
+    var next: Node[T] = _
   }
 }
 object NodeTest extends App {
@@ -222,7 +224,7 @@ object StackByListDemo extends App with StackTest {
     }
   }
 
-  lazy val stack = new ListStack[String] with TStack[String]
+  val stack = new ListStack[String] with TStack[String]
 }
 
 trait QueueTest {
@@ -236,9 +238,9 @@ trait QueueTest {
   //to be or not to - be - - that - - - is
   StdIn.readLine("Input words>>> ").split(" ").map(_.trim).foreach {
     case "-" =>
-      if (!queue.isEmpty) println("Dequeue ", queue.dequeue())
+      if (!queue.isEmpty) println("Dequeue " -> queue.dequeue())
     case item =>
-      println("Enqueue ", item); queue.enqueue(item)
+      println("Enqueue " -> item); queue.enqueue(item)
   }
   println("(" + queue.size + " left on queue)")
 }
@@ -281,7 +283,7 @@ object QueueByListDemo extends App with QueueTest {
     }
   }
 
-  lazy val queue = new ListQueue[String] with TQueue[String]
+  val queue = new ListQueue[String] with TQueue[String]
 }
 
 trait BagTest {
@@ -296,7 +298,7 @@ trait BagTest {
     case "-" =>
       //if (!bag.isEmpty) println("Dequeue ", bag.add())
     case item =>
-      println("Add ", item); bag.add(item)
+      println("Add " -> item); bag.add(item)
   }
   println("(" + bag.size + " left on bag)")
 }
@@ -333,7 +335,7 @@ object BagByListDemo extends App with BagTest {
     }
   }
 
-  lazy val bag = new ListBag[String] with TBag[String]
+  val bag = new ListBag[String] with TBag[String]
 }
 
 //通过 Array 和 List 实现了 Bag、Queue、Stack 这三种数据结构，在后期

@@ -35,7 +35,7 @@ object LineDraw extends JFXApp {
     translateY = 15
     onAction = _ => {
       bcPoints.segments().foreach { ls =>
-        println("seg is ",ls)
+        println("seg is " -> ls)
         val l = Line(ls.p.x,ls.p.y,ls.q.x,ls.q.y)
         l.stroke = Color.Red
         l.strokeWidth = 3

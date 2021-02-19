@@ -31,7 +31,7 @@ object N1 extends App {
       Math.sqrt(Math.pow(a.getX - b.getX,2) + Math.pow(a.getY - b.getY,2)) }.min
   }
   println("Input Number >> ")
-  println("MinDistance is ", minDistance {
+  println("MinDistance is " -> minDistance {
     (1 to StdIn.readInt()).foldLeft (Array[Point2D]()) { (sum, _) =>
       sum :+ new Point2D.Double(Random.nextDouble(),Random.nextDouble())
     }
@@ -131,7 +131,7 @@ object N6 extends App {
   }
   private val a: String = StdIn.readLine("Input str A:")
   private val b: String = StdIn.readLine("Input str B:")
-  println("IS a rotation? ", isRotation(a,b))
+  println("IS a rotation? " -> isRotation(a,b))
 }
 
 object N7 extends App {

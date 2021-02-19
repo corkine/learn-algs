@@ -49,15 +49,15 @@ object N1 extends App {
             sb.toString()
           }.mkString(", ")
         })
-        do { //从左边找到每一个较大的值
+        while ({ { //从左边找到每一个较大的值
           i += 1 //从选中值后第一个元素开始，不用从 lo 开始，否则浪费一次比较
           if (i == hi) leftEnd = true //边界条件，如果一直找不到，则退出循环
-        } while (!leftEnd && less(a(i),v))
-        do { //从右边找到每一个较小的值
+        } ; !leftEnd && less(a(i),v)}) ()
+        while ({ { //从右边找到每一个较小的值
           j -= 1 //从最高位开始 - hi
           if (j == lo) rightEnd = true //边界条件，如果向左一直找不到，则退出循环
           //注意，这里找不到一定要到 lo，而非 lo + 1，否则在小大两个排序就会出问题
-        } while (!rightEnd && less(v,a(j)))
+        } ; !rightEnd && less(v,a(j))}) ()
         if (i >= j) allEnd = true //对于边界情况直接返回，比如常数数组，排过序的数组
         else exch(a, i, j) //将小的放左边，大的放右边
       }

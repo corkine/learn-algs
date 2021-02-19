@@ -1,6 +1,5 @@
 package chapter1.Ex1_1
 import tools.Utils._
-
 import scala.collection.mutable.ArrayBuffer
 import scala.io.StdIn
 
@@ -29,7 +28,7 @@ trait N13[T] {
 }
 
 object N13Test extends App with N13[Double] {
-  override val data = Array(Array(1,2,3),Array(4,5,6),Array(7,8,9))
+  override val data = Array(Array(1D,2D,3D),Array(4D,5D,6D),Array(7D,8D,9D))
   println(print)
   println(printT)
 }
@@ -112,20 +111,20 @@ object N18 extends App {
     if (b % 2 == 0) return mystery(a+a, b/2)
     mystery(a+a, b/2) + a
   }
-  println(mystery(2,25),mystery(3,11),2 * 25, 3 * 11)
+  println((mystery(2,25),mystery(3,11),2 * 25, 3 * 11))
   (1 to 20) foreach { i =>
-    println(2,i,mystery(2,i))
-    println(3,i,mystery(3,i))
+    println((2,i,mystery(2,i)))
+    println((3,i,mystery(3,i)))
   }
   def mystery2(a:Int,b:Int):Int = {
     if (b == 0) return 1
     if (b % 2 == 0) return mystery2(a*a, b/2)
     mystery2(a*a, b/2) * a
   }
-  println(mystery2(2,25),mystery2(3,11),Math.pow(2,25),Math.pow(3,11))
+  println((mystery2(2,25),mystery2(3,11),Math.pow(2,25),Math.pow(3,11)))
   (1 to 20) foreach { i =>
-    println(2,i,mystery2(2,i))
-    println(3,i,mystery2(3,i))
+    println((2,i,mystery2(2,i)))
+    println((3,i,mystery2(3,i)))
   }
 }
 
@@ -148,7 +147,7 @@ object N19 extends App {
   val start = System.currentTimeMillis()
   def ss(start:Int):Stream[Int] = start #:: ss(start + 1)
   ss(1).takeWhile { i => {
-      println(i,F(i))
+      println(i -> F(i))
       if (System.currentTimeMillis() - start < 1000 * 10) true
       else false
     }
@@ -163,7 +162,7 @@ object N20 extends App {
       if (n == 1) res * 1
       else loop(n-1, res * n)
     }
-    println("loop",n,loop(n,1))
+    println("loop" -> n -> loop(n,1))
     Math.log10(loop(n,1))
   }
 //  println(lnNP(4))

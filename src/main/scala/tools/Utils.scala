@@ -26,4 +26,15 @@ object Utils {
   def ptime1(op: => Unit): Unit = println(time(1)(op))
   def time3(op: => Unit): String = time(3)(op)
   def ptime3(op: => Unit): Unit = println(time(3)(op))
+  def btime1(op: => Unit)(implicit sb:StringBuilder): Unit = sb.append(time(1)(op))
+  def btime3(op: => Unit)(implicit sb:StringBuilder): Unit = sb.append(time(3)(op))
+
+  private var data:String = ""
+  def vtime1(op: => Unit): Unit = data += time(1)(op)
+  def vtime3(op: => Unit): Unit = data += time(3)(op)
+  def showResult(): Unit = println(data)
+  def showResultWithReset(): Unit = { println(data); data = "" }
+  def getResult: String = data
+  def getResultWithReset: String = { val t = data; data = ""; t }
+  def clear(): Unit = data = ""
 }

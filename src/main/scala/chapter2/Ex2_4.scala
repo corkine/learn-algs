@@ -9,7 +9,7 @@ object N1 extends App {
   implicit val ord: Ordering[String] = Ordering.String
   val pq = new mutable.PriorityQueue[String]()
   "P R I O * R * * I * T * Y * * * Q U E * * * U * E".split(" ").map(_.trim).foreach {
-    case "*" => println("dequeue",pq.dequeue())
+    case "*" => println("dequeue" -> pq.dequeue())
     case o => pq.enqueue(o)
   }
 }

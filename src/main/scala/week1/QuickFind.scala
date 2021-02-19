@@ -21,7 +21,7 @@ trait QuickFind extends Conn {
       val id = ids(i)
       if (id == aId) ids(i) = bId
     }
-    println("ids",ids.mkString(","))
+    println("ids" -> ids.mkString(","))
   }
 }
 
@@ -35,7 +35,7 @@ trait QuickUnion extends Conn {
   override def connect(a: Int, b: Int): Boolean = root(a) == root(b)
   override def union(a: Int, b: Int): Unit = {
     ids(root(a)) = root(b)
-    println("ids",ids.mkString(","))
+    println("ids" -> ids.mkString(","))
   }
   protected def root(a:Int):Int = ids(a) match {
     case `a` => a
@@ -65,8 +65,8 @@ trait WeightQuickUnion extends Conn {
     if (sa <= sb) ids(ar) = br else ids(br) = ar
     sizes(b) = sab
     sizes(a) = sab
-    print("ids",ids.mkString(","))
-    println("sizes",sizes.mkString(","))
+    print("ids" -> ids.mkString(","))
+    println("sizes" -> sizes.mkString(","))
   }
 }
 

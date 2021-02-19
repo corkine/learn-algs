@@ -120,7 +120,7 @@ class MaxPQ3[T >:Null <:Comparable[T] :ClassTag](val maxN:Int) extends SortBasic
   def insert(key: T): Unit = {
     //println("Insert " + key + ", n now is " + N + ", N++ and set array(n) = key and swim(" + (N + 1) + ")")
     N += 1; pq(N) = key;
-    println("before swim",pq.mkString(","))
+    println("before swim" -> pq.mkString(","))
     swim(N);
   }
   def delMax(): T = {

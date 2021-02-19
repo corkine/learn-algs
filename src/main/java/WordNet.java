@@ -8,48 +8,49 @@ import java.util.ArrayList;
 
 public class WordNet {
     private final ST<String, Bag<Integer>> st;
-    private final ArrayList<String> idList;
+    private final ArrayList<String> idWords;
     private final Digraph G;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if(synsets == null || hypernyms == null) throw new IllegalArgumentException();
 
-        st = new ST<String, Bag<Integer>>();
-        idList = new ArrayList<String>();
+        st = new ST<>();
+        idWords = new ArrayList<>();
 
         int count = 0;
-        In in1 = new In(synsets);
-        while(in1.hasNextLine()) {
-            String[] a = in1.readLine().split(",");
-            String[] a2 = a[1].split(" ");
+        In synsetsIn = new In(synsets);
+        while(synsetsIn.hasNextLine()) {
+            String[] lines = synsetsIn.readLine().split(",");
+            int wordsId = Integer.parseInt(lines[0]);
+            String words = lines[1];
+            String[] wordList = words.split(" ");
 
-            for(int i = 0; i < a2.length; i++) {
-                if(st.contains(a2[i])) st.get(a2[i]).add(Integer.parseInt(a[0]));
-                else {
-                    Bag<Integer> b = new Bag<Integer>();
-                    b.add(Integer.parseInt(a[0]));
-                    st.put(a2[i], b);
-                }
+            for (String s : wordList) {
+                if (st.contains(s)) st.get(s).add(wordsId);
+                else { Bag<Integer> b = new Bag<>(); b.add(wordsId); st.put(s, b); }
             }
-            count++;
-            idList.add(a[1]);
+            count += 1;
+            idWords.add(words);
         }
 
         G = new Digraph(count);
-        In in2 = new In(hypernyms);
+        In hypernymsIn = new In(hypernyms);
         boolean[] isNotRoot = new boolean[count];
         int rootNumber = 0;
 
-        while(in2.hasNextLine()) {
-            String[] a = in2.readLine().split(",");
-            isNotRoot[Integer.parseInt(a[0])] = true;
+        while(hypernymsIn.hasNextLine()) {
+            String[] a = hypernymsIn.readLine().split(",");
+            int id = Integer.parseInt(a[0]);
+            isNotRoot[id] = true;
+            int relatedId = -1;
             for(int i = 1; i < a.length; i++)
-                G.addEdge(Integer.parseInt(a[0]), Integer.parseInt(a[i]));
+                relatedId = Integer.parseInt(a[i]);
+                G.addEdge(id, relatedId);
         }
 
         for(int i = 0; i < count; i++) {
-            if(!isNotRoot[i]) rootNumber++;
+            if(!isNotRoot[i]) rootNumber += 1;
         }
         DirectedCycle d = new DirectedCycle(G);
         if(rootNumber > 1 || d.hasCycle()) throw new IllegalArgumentException();
@@ -87,7 +88,7 @@ public class WordNet {
         Bag<Integer> idb = st.get(nounB);
 
         int root = s.ancestor(ida, idb);
-        return idList.get(root);
+        return idWords.get(root);
     }
 
     // do unit testing of this class

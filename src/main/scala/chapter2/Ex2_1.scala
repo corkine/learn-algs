@@ -47,7 +47,7 @@ object N4 extends App {
       (1 until a.length).foreach { i =>
         (1 to i).reverse.foreach { j =>
           if (less(a(j),a(j-1))) {
-            println(i,a.mkString(","))
+            println(i -> a.mkString(","))
             exch(a, j, j - 1)
           }
         }
@@ -131,7 +131,7 @@ object N9 extends App {
       }
       //println("aUsed",aUsed.mkString(", "))
       //println("aUsed/aLength",aUsed.map(i => (i * 1.0/a.length).formatted("%.3f")).mkString(","))
-      println("Result",aUsed.map(i => i * 1.0/a.length).sum * 1.0/aUsed.length)
+      println("Result" -> aUsed.map(i => i * 1.0/a.length).sum * 1.0/aUsed.length)
     }
   }
   new ShellExp[String] { }.sort(Array("E","A","S","Y","Q","U","E","S","T","I","O","N"))
