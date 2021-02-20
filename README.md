@@ -4,7 +4,7 @@
 
 ## 平台
 
-Scala 2.13 + sbt + JavaFX(ScalaFx)
+Scala 3.0 + sbt + JavaFX(ScalaFx)
 
 ![](http://static2.mazhangjing.com/badge/openjdk.png)
 ![](http://static2.mazhangjing.com/badge/javafx.png)
