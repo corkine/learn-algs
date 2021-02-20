@@ -1,0 +1,15 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <ScalaCodeStyleSettings>
+      <option name="TYPE_ANNOTATION_IMPLICIT_MODIFIER" value="false" />
+      <option name="TYPE_ANNOTATION_EXCLUDE_WHEN_TYPE_MATCHES">
+        <set>
+          <option value="play.api.libs.json.Reads*" />
+          <option value="play.api.mvc.Action*" />
+          <option value="sbt.*" />
+          <option value="slick.*" />
+        </set>
+      </option>
+    </ScalaCodeStyleSettings>
+  </code_scheme>
+</component>

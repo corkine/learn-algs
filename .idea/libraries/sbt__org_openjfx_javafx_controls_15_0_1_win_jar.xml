@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="sbt: org.openjfx:javafx-controls:15.0.1:win:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo.huaweicloud.com/repository/maven/org/openjfx/javafx-controls/15.0.1/javafx-controls-15.0.1-win.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
